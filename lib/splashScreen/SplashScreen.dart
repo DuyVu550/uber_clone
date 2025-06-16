@@ -5,7 +5,7 @@ import 'package:uber_clone/global/global.dart';
 import 'package:uber_clone/screen/login_screen.dart';
 
 import '../Assistant_methods/assistant_method.dart';
-import '../screen/main_page.dart';
+import '../screen/main_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});

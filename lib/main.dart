@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:uber_clone/global/global.dart';
 import 'package:uber_clone/screen/forgot_password_screen.dart';
 import 'package:uber_clone/screen/login_screen.dart';
-import 'package:uber_clone/screen/main_page.dart';
+import 'package:uber_clone/screen/main_screen.dart';
 import 'package:uber_clone/screen/register_screen.dart';
 import 'package:uber_clone/splashScreen/SplashScreen.dart';
 import 'package:uber_clone/themeProvider/themeProvider.dart';
@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
       themeMode: ThemeMode.system,
       theme: MyThemes.lightTheme,
       darkTheme: MyThemes.darkTheme,
-      home: LoginScreen(),
+      home: MainScreen(),
     );
   }
 }

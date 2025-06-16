@@ -7,7 +7,7 @@ import 'package:uber_clone/screen/register_screen.dart';
 
 import '../global/global.dart';
 import 'forgot_password_screen.dart';
-import 'main_page.dart';
+import 'main_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});

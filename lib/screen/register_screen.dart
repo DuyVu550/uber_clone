@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:uber_clone/global/global.dart';
-import 'package:uber_clone/screen/main_page.dart';
+import 'package:uber_clone/screen/main_screen.dart';
 
 import 'forgot_password_screen.dart';
 import 'login_screen.dart';
