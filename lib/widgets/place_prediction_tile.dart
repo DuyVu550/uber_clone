@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uber_clone/Models/directions.dart';
@@ -53,14 +52,14 @@ class _PlacePredictionTileDesignState extends State<PlacePredictionTileDesign> {
   Widget build(BuildContext context) {
     bool darkTheme = MediaQuery.of(context).platformBrightness == Brightness.dark;
     return ElevatedButton(
-        onPressed: (){
-          getPlaceDirectionDetails(widget.predictedPlace!.place_id, context);
-        },
+      onPressed: (){
+        getPlaceDirectionDetails(widget.predictedPlace!.place_id, context);
+      },
       style: ElevatedButton.styleFrom(
-          backgroundColor: darkTheme ? Colors.black : Colors.white,
-        ),
-        child: Padding(
-            padding: EdgeInsets.all(8.0),
+        backgroundColor: darkTheme ? Colors.black : Colors.white,
+      ),
+      child: Padding(
+          padding: EdgeInsets.all(8.0),
           child: Row(
             children: [
               Icon(
@@ -69,8 +68,8 @@ class _PlacePredictionTileDesignState extends State<PlacePredictionTileDesign> {
               ),
               SizedBox(width: 10.0,),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         widget.predictedPlace!.main_text!,
@@ -89,11 +88,11 @@ class _PlacePredictionTileDesignState extends State<PlacePredictionTileDesign> {
                         ),
                       )
                     ],
-                )
+                  )
               )
             ],
           )
-        ),
+      ),
     );
   }
 }

@@ -1,9 +1,11 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:uber_clone/Assistant_methods/request_assistant.dart';
 import 'package:uber_clone/InfoHandler/app_info.dart';
 import 'package:uber_clone/Models/directions.dart';
+import 'package:uber_clone/Models/directions_details_info.dart';
 import 'package:uber_clone/global/Map.dart';
 import 'package:uber_clone/global/global.dart';
 
@@ -25,8 +27,7 @@ class AssistantMethod {
 
   static Future<String> searchAddressForGeographicCoordinates(Position position,
       context) async {
-    String apiUrl = "https://nominatim.openstreetmap.org/reverse?lat=${position
-        .latitude}lon=${position.longitude}&format=json";
+    String apiUrl = "https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.latitude},${position.longitude}&key=$mapKey";
     String humanReadableAddress = "";
     var requestResponse = await RequestAssistant.receiveRequest(apiUrl);
     if (requestResponse != "Error Occurred") {
@@ -38,5 +39,16 @@ class AssistantMethod {
       Provider.of<AppInfo>(context, listen: false).updatePickUpLocationAddress(userPickUpAddress);
     }
     return humanReadableAddress;
+  }
+  static Future<DirectionsDetailsInfo> obtainOriginToDestinationDirectionsDetails(LatLng originPosition, LatLng destinationPosition) async{
+    String urlOriginToDestinationDirectionsDetails = "http://maps.googleapis.com/maps/api/directions/json?origin=${originPosition.latitude},${originPosition.longitude}&destination=${destinationPosition.latitude},${destinationPosition.longitude}&key=$mapKey";
+    var responseDirectionsApi = await RequestAssistant.receiveRequest(urlOriginToDestinationDirectionsDetails);
+    DirectionsDetailsInfo directionsDetailsInfo = DirectionsDetailsInfo();
+    directionsDetailsInfo.e_points = responseDirectionsApi["routes"][0]["overview_polyline"]["points"];
+    directionsDetailsInfo.distance_text = responseDirectionsApi["routes"][0]["legs"][0]["distance"]["text"];
+    directionsDetailsInfo.distance_value = responseDirectionsApi["routes"][0]["legs"][0]["distance"]["value"];
+    directionsDetailsInfo.duration_text = responseDirectionsApi["routes"][0]["legs"][0]["duration"]["text"];
+    directionsDetailsInfo.duration_value = responseDirectionsApi["routes"][0]["legs"][0]["duration"]["value"];
+    return directionsDetailsInfo;
   }
 }

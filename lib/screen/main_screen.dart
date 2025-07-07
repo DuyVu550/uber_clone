@@ -1,4 +1,7 @@
 import 'dart:async';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
+import 'package:uber_clone/screen/precis_pickup_location.dart';
+import 'package:uber_clone/screen/search_placed_screen.dart';
 import 'package:uber_clone/themeProvider/themeProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoder2/geocoder2.dart';
@@ -9,6 +12,7 @@ import 'package:provider/provider.dart';
 import 'package:uber_clone/Models/directions.dart';
 import 'package:uber_clone/global/Map.dart';
 import 'package:uber_clone/global/global.dart';
+import 'package:uber_clone/widgets/progress_dialog.dart';
 
 import '../Assistant_methods/assistant_method.dart';
 import '../InfoHandler/app_info.dart';
@@ -25,7 +29,7 @@ class _MainScreenState extends State<MainScreen> {
   loc.Location location = loc.Location();
   String? address;
   final Completer<GoogleMapController> _controllerGoogleMap = Completer();
-
+  GoogleMapController? newGoogleMapController;
   static const CameraPosition _kGooglePlex = CameraPosition(
     target: LatLng(10.762622, 106.660172), // TP.HCM
     zoom: 14.4746,
@@ -35,7 +39,6 @@ class _MainScreenState extends State<MainScreen> {
   double waitingResponseFromDriverContainerHeight = 0.0;
   double assignedDriverInfoContainerHeight = 0.0;
 
-  GoogleMapController? newGoogleMapController;
   Position? userCurrentPosition;
   var geolocation = Geolocator();
 
@@ -81,7 +84,7 @@ class _MainScreenState extends State<MainScreen> {
     userEmail = userModelCurrentInfo!.email!;
   }
 
-  getAddressFromLatLng() async {
+  /*getAddressFromLatLng() async {
     try {
       GeoData data = await Geocoder2.getDataFromCoordinates(
         latitude: pickLocation!.latitude,
@@ -99,6 +102,104 @@ class _MainScreenState extends State<MainScreen> {
     } catch (e) {
       print("Error getting address: $e");
     }
+  }*/
+  Future<void> drawPolylineFromOrigintoDestination(bool darkTheme) async{
+    var originPosition = Provider.of<AppInfo>(context, listen: false).userPickUpLocation;
+    var destinationPosition = Provider.of<AppInfo>(context, listen: false).userDropOffLocation;
+    var originLatLng = LatLng(
+      double.parse(originPosition!.locationLatitude!),
+      double.parse(originPosition.locationLongtitude!),
+    );
+    var destinationLatLng = LatLng(
+      double.parse(destinationPosition!.locationLatitude!),
+      double.parse(destinationPosition.locationLongtitude!),
+    );
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return ProgressDialog(message: "Please wait...");
+        });
+    var directionDetailsInfo = await AssistantMethod.obtainOriginToDestinationDirectionsDetails(originLatLng, destinationLatLng,);
+    setState(() {
+      tripDirectionsDetailsInfo = directionDetailsInfo;
+    });
+    Navigator.pop(context);
+    PolylinePoints pPoints = PolylinePoints();
+    List<PointLatLng> decodedPolylinePointsResultList = pPoints.decodePolyline(directionDetailsInfo.e_points!);
+    pLineCoordinatesList.clear();
+    if(decodedPolylinePointsResultList.isNotEmpty) {
+      decodedPolylinePointsResultList.forEach((PointLatLng pointLatLng) {
+        pLineCoordinatesList.add(LatLng(pointLatLng.latitude, pointLatLng.longitude));
+      });
+    }
+    polylineSet.clear();
+    setState(() {
+      Polyline polyline = Polyline(
+        color: darkTheme ? Colors.amberAccent : Colors.blue,
+        polylineId: PolylineId("PolylineID"),
+        jointType: JointType.round,
+        points: pLineCoordinatesList,
+        startCap: Cap.roundCap,
+        endCap: Cap.roundCap,
+        geodesic: true,
+        width: 5,
+      );
+      polylineSet.add(polyline);
+    });
+    LatLngBounds boundsLatLng;
+    if(originLatLng.latitude > destinationLatLng.latitude && originLatLng.longitude > destinationLatLng.longitude) {
+      boundsLatLng = LatLngBounds(southwest: destinationLatLng, northeast: originLatLng);
+    }
+    else if(originLatLng.longitude > destinationLatLng.longitude) {
+      boundsLatLng = LatLngBounds(
+          southwest: LatLng(originLatLng.latitude, destinationLatLng.longitude),
+          northeast: LatLng(destinationLatLng.latitude, originLatLng.longitude));
+    }
+    else if(originLatLng.latitude > destinationLatLng.latitude) {
+      boundsLatLng = LatLngBounds(
+          southwest: LatLng(destinationLatLng.latitude, originLatLng.longitude),
+          northeast: LatLng(originLatLng.latitude, destinationLatLng.longitude));
+    }
+    else {
+      boundsLatLng = LatLngBounds(southwest: originLatLng, northeast: destinationLatLng);
+    }
+    newGoogleMapController!.animateCamera(CameraUpdate.newLatLngBounds(boundsLatLng, 65));
+    Marker originMarker = Marker(
+      markerId: MarkerId("originId"),
+      position: originLatLng,
+      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+      infoWindow: InfoWindow(title: originPosition.locationName, snippet: "Origin"),
+    );
+    Marker destinationMarker = Marker(
+      markerId: MarkerId("destinationId"),
+      position: destinationLatLng,
+      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+      infoWindow: InfoWindow(title: destinationPosition.locationName, snippet: "Destination"),
+    );
+    setState(() {
+      markerSet.add(originMarker);
+      markerSet.add(destinationMarker);
+    });
+    Circle originCircle = Circle(
+      circleId: CircleId("originId"),
+      fillColor: Colors.green,
+      radius: 12,
+      strokeWidth: 3,
+      strokeColor: Colors.white,
+      center: originLatLng,
+    );
+    Circle destinationCircle = Circle(
+      circleId: CircleId("destinationId"),
+      fillColor: Colors.green,
+      radius: 12,
+      strokeWidth: 3,
+      strokeColor: Colors.white,
+      center: destinationLatLng,
+    );
+    setState(() {
+      circleSet.add(originCircle);
+      circleSet.add(destinationCircle);
+    });
   }
 
   @override
@@ -142,7 +243,7 @@ class _MainScreenState extends State<MainScreen> {
                 });
                 locateUserPosition();
               },
-              onCameraMove: (CameraPosition? position) {
+            /*  onCameraMove: (CameraPosition? position) {
                 // Handle camera movement if needed
                 if (pickLocation != position!.target) {
                   setState(() {
@@ -152,21 +253,21 @@ class _MainScreenState extends State<MainScreen> {
               },
               onCameraIdle: () {
                 getAddressFromLatLng();
-              },
+              },*/
             ),
-            Align(
+           /* Align(
               alignment: Alignment.center,
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 35),
                 child: Image.asset("../image/pick.png", height: 45, width: 45),
               ),
-            ),
+            ),*/
             Positioned(
               bottom: 0,
               left: 0,
               right: 0,
               child: Padding(
-                  padding: EdgeInsets.fromLTRB(20, 20, 10, 880),
+                  padding: EdgeInsets.fromLTRB(20, 20, 70, 20),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -215,8 +316,14 @@ class _MainScreenState extends State<MainScreen> {
                                 Padding(
                                   padding: EdgeInsets.all(5),
                                   child: GestureDetector(
-                                    onTap: () {
-
+                                    onTap: () async {
+                                      var responseFromSearchScreen = await Navigator.push(context, MaterialPageRoute(builder: (c) => SearchPlacedScreen()));
+                                      if(responseFromSearchScreen == "containedDropoff") {
+                                        setState(() {
+                                          openNavigationDrawer = false;
+                                        });
+                                      }
+                                      await drawPolylineFromOrigintoDestination(darkTheme);
                                     },
                                     child: Row(
                                       children: [
@@ -228,7 +335,7 @@ class _MainScreenState extends State<MainScreen> {
                                           Text("To ", style: TextStyle(color: darkTheme ? Colors.amber.shade400 : Colors.blue,
                                               fontSize: 12, fontWeight: FontWeight.bold)),
                                           Text(Provider.of<AppInfo>(context).userDropOffLocation != null
-                                              ? (Provider.of<AppInfo>(context,).userDropOffLocation!.locationName!).substring(0, 24) + "..."
+                                              ? Provider.of<AppInfo>(context,).userDropOffLocation!.locationName!
                                               : " Where to?",
                                             style: TextStyle(color: Colors.grey, fontSize: 14),)
                                         ],
@@ -240,7 +347,47 @@ class _MainScreenState extends State<MainScreen> {
 
                               ],
                             ),
+                          ),
+                          SizedBox(height: 5,),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              ElevatedButton(
+                                  onPressed: (){
+                                    Navigator.push(context, MaterialPageRoute(builder: (c) => PrecisePickupScreen()));
+                                  },
+                                  child: Text(
+                                    "Change Pickup",
+                                    style: TextStyle(
+                                      color: darkTheme ? Colors.black : Colors.white,
+                                    ),
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: darkTheme ? Colors.amber.shade400 : Colors.blue,
+                                    textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                  )
+                              ),
+                              SizedBox(width: 10,),
+
+                              ElevatedButton(
+                                  onPressed: (){
+
+                                  },
+                                  child: Text(
+                                    "Request a ride",
+                                    style: TextStyle(
+                                      color: darkTheme ? Colors.black : Colors.white,
+                                    ),
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: darkTheme ? Colors.amber.shade400 : Colors.blue,
+                                    textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                  )
+                              ),
+
+                            ],
                           )
+
                         ],
                       )
                     )
