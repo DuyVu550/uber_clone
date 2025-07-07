@@ -29,7 +29,7 @@ class AssistantMethod {
         .latitude}lon=${position.longitude}&format=json";
     String humanReadableAddress = "";
     var requestResponse = await RequestAssistant.receiveRequest(apiUrl);
-    if (requestResponse != "Error occured") {
+    if (requestResponse != "Error Occurred") {
       humanReadableAddress = requestResponse["results"][0]["formatted_address"];
       Directions userPickUpAddress = Directions();
       userPickUpAddress.locationLatitude = position.latitude.toString();
