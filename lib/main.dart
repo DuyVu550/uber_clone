@@ -1,10 +1,13 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:uber_clone/InfoHandler/app_info.dart';
 import 'package:uber_clone/global/global.dart';
 import 'package:uber_clone/screen/forgot_password_screen.dart';
 import 'package:uber_clone/screen/login_screen.dart';
 import 'package:uber_clone/screen/main_screen.dart';
 import 'package:uber_clone/screen/register_screen.dart';
+import 'package:uber_clone/screen/search_placed_screen.dart';
 import 'package:uber_clone/splashScreen/SplashScreen.dart';
 import 'package:uber_clone/themeProvider/themeProvider.dart';
 
@@ -28,13 +31,16 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      debugShowCheckedModeBanner: false,
-      themeMode: ThemeMode.system,
-      theme: MyThemes.lightTheme,
-      darkTheme: MyThemes.darkTheme,
-      home: MainScreen(),
+    return ChangeNotifierProvider(
+      create: (context) => AppInfo(),
+      child: MaterialApp(
+        title: 'Uber Clone',
+        debugShowCheckedModeBanner: false,
+        themeMode: ThemeMode.system,
+        theme: MyThemes.lightTheme,
+        darkTheme: MyThemes.darkTheme,
+        home: SearchPlacedScreen(),
+      ),
     );
   }
 }
