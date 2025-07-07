@@ -9,10 +9,10 @@ class RequestAssistant{
         var decodeResponseData = jsonDecode(responseData); // You can use jsonDecode if needed
         return decodeResponseData;
       } else {
-        return "Error occured";
+        return "Error Occurred";
       }
     } catch (e) {
-      return "Error occured";
+      return "Error Occurred";
     }
   }
 }
