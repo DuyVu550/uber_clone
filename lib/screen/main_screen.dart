@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'package:flutter_geofire/flutter_geofire.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
+import 'package:uber_clone/Models/active_nearby_available_drivers.dart';
 import 'package:uber_clone/screen/precis_pickup_location.dart';
 import 'package:uber_clone/screen/search_placed_screen.dart';
 import 'package:uber_clone/themeProvider/themeProvider.dart';
@@ -13,7 +15,8 @@ import 'package:uber_clone/Models/directions.dart';
 import 'package:uber_clone/global/Map.dart';
 import 'package:uber_clone/global/global.dart';
 import 'package:uber_clone/widgets/progress_dialog.dart';
-
+import '../Assistant_methods/geofire_assistant.dart';
+import '../screen/drawer_screen.dart';
 import '../Assistant_methods/assistant_method.dart';
 import '../InfoHandler/app_info.dart';
 
@@ -82,27 +85,93 @@ class _MainScreenState extends State<MainScreen> {
     print("Your address: $humanReadableAddress");
     userName = userModelCurrentInfo!.name!;
     userEmail = userModelCurrentInfo!.email!;
+
+    initializeGeoFireListener();
   }
 
-  /*getAddressFromLatLng() async {
-    try {
-      GeoData data = await Geocoder2.getDataFromCoordinates(
-        latitude: pickLocation!.latitude,
-        longitude: pickLocation!.longitude,
-        googleMapApiKey: '',
-      );
+  initializeGeoFireListener(){
+    Geofire.initialize("activeDrivers");
+    Geofire.queryAtLocation(userCurrentPosition!.latitude, userCurrentPosition!.longitude, 10)!
+     .listen((map) {
+       print(map);
+       if(map != null) {
+         var callBack = map["callBack"];
+         switch (callBack) {
+           //whenever any driver become active
+           case Geofire.onKeyEntered:
+             ActiveNearbyAvailableDrivers activeNearbyAvailableDrivers = ActiveNearbyAvailableDrivers();
+             activeNearbyAvailableDrivers.locationLongitude = map["longitude"];
+             activeNearbyAvailableDrivers.locationLatitude = map["latitude"];
+             activeNearbyAvailableDrivers.driverId = map["key"];
+             GeofireAssistant.activeNearbyAvailableDriversList.add(
+                 activeNearbyAvailableDrivers);
+             if (activeNearbyDriverKeyLoaded) {
+               displayActiveDriverOnUserMap();
+             }
+             break;
+            //whenever any driver become offline
+           case Geofire.onKeyExited:
+             GeofireAssistant.deleteOfflineDriverFromList(map["key"]);
+             displayActiveDriverOnUserMap();
+             break;
+            //whenever driver move and update driver's location
+           case Geofire.onKeyMoved:
+             ActiveNearbyAvailableDrivers activeNearbyAvailableDrivers = ActiveNearbyAvailableDrivers();
+             activeNearbyAvailableDrivers.locationLongitude = map["longitude"];
+             activeNearbyAvailableDrivers.locationLatitude = map["latitude"];
+             activeNearbyAvailableDrivers.driverId = map["key"];
+             GeofireAssistant.updateActiveNearbyAvailableDriverLocation(
+                 activeNearbyAvailableDrivers);
+             displayActiveDriverOnUserMap();
+             break;
+         //display those online drivers on user's map
+           case Geofire.onGeoQueryReady:
+             activeNearbyDriverKeyLoaded = true;
+             displayActiveDriverOnUserMap();
+             break;
+         }
+       }
+       setState(() {
+
+       });
+    });
+
+  }
+
+  displayActiveDriverOnUserMap(){
+    setState(() {
+      markerSet.clear();
+      circleSet.clear();
+      Set<Marker> driverMarkersSet = Set<Marker>();
+      for(ActiveNearbyAvailableDrivers eachDriver in GeofireAssistant.activeNearbyAvailableDriversList) {
+        LatLng driverActivePosition = LatLng(
+          eachDriver.locationLatitude!,
+          eachDriver.locationLongitude!,
+        );
+        Marker marker = Marker(
+          markerId: MarkerId(eachDriver.driverId!),
+          position: driverActivePosition,
+          icon: activeNearbyIcon!,
+          rotation: 360,
+        );
+        driverMarkersSet.add(marker);
+      }
+
       setState(() {
-        Directions userPickUpAddress = Directions();
-        userPickUpAddress.locationLatitude = pickLocation!.latitude.toString();
-        userPickUpAddress.locationLongtitude = pickLocation!.longitude.toString();
-        userPickUpAddress.locationName = data.address;
-        Provider.of<AppInfo>(context, listen: false).updatePickUpLocationAddress(userPickUpAddress);
-        address = data.address;
+        markerSet = driverMarkersSet;
       });
-    } catch (e) {
-      print("Error getting address: $e");
+    });
+  }
+
+  createActiveByDriverIconMarker() async {
+    if(activeNearbyIcon == null) {
+      ImageConfiguration imageConfiguration = createLocalImageConfiguration(context, size: Size(2, 2));
+      BitmapDescriptor.asset(imageConfiguration, "image/car.jpg").then((value) {
+        activeNearbyIcon = value;
+      });
     }
-  }*/
+  }
+
   Future<void> drawPolylineFromOrigintoDestination(bool darkTheme) async{
     var originPosition = Provider.of<AppInfo>(context, listen: false).userPickUpLocation;
     var destinationPosition = Provider.of<AppInfo>(context, listen: false).userDropOffLocation;
@@ -224,6 +293,8 @@ class _MainScreenState extends State<MainScreen> {
         FocusScope.of(context).unfocus();
       },
       child: Scaffold(
+        key: scaffoldKey,
+        drawer: DrawerScreen(),
         body: Stack(
           children: [
             GoogleMap(
@@ -243,25 +314,26 @@ class _MainScreenState extends State<MainScreen> {
                 });
                 locateUserPosition();
               },
-            /*  onCameraMove: (CameraPosition? position) {
-                // Handle camera movement if needed
-                if (pickLocation != position!.target) {
-                  setState(() {
-                    pickLocation = position.target;
-                  });
-                }
-              },
-              onCameraIdle: () {
-                getAddressFromLatLng();
-              },*/
             ),
-           /* Align(
-              alignment: Alignment.center,
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 35),
-                child: Image.asset("../image/pick.png", height: 45, width: 45),
-              ),
-            ),*/
+            //drawer
+            Positioned(
+              top: 50,
+              left: 20,
+                child: Container(
+                  child: GestureDetector(
+                    onTap: () {
+                      scaffoldKey.currentState!.openDrawer();
+                    },
+                    child: CircleAvatar(
+                      backgroundColor: darkTheme ? Colors.amber.shade400 : Colors.white,
+                      child: Icon(
+                        Icons.menu,
+                        color: darkTheme ? Colors.black : Colors.lightBlue,
+                      ),
+                    ),
+                  ),
+                )
+            ),
             Positioned(
               bottom: 0,
               left: 0,
@@ -384,10 +456,8 @@ class _MainScreenState extends State<MainScreen> {
                                     textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                                   )
                               ),
-
                             ],
                           )
-
                         ],
                       )
                     )
@@ -395,25 +465,6 @@ class _MainScreenState extends State<MainScreen> {
                 ),
               ),
             )
-            /*Positioned(
-              top: 40,
-              right: 20,
-              left: 20,
-              child: Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.black),
-                  color: Colors.white,
-                ),
-                padding: EdgeInsets.all(20),
-                child: Text(
-                  Provider.of<AppInfo>(context).userPickUpLocation != null
-                      ? (Provider.of<AppInfo>(context,).userPickUpLocation!.locationName!).substring(0, 24) + "..."
-                      : " Not getting address",
-                  overflow: TextOverflow.visible,
-                  softWrap: true,
-                ),
-              ),
-            ),*/
           ],
         ),
       ),

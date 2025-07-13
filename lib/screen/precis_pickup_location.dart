@@ -84,6 +84,7 @@ class _PrecisePickupScreenState extends State<PrecisePickupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    bool darkTheme = MediaQuery.of(context).platformBrightness == Brightness.dark;
     return Scaffold(
       body: Stack(
         children: [
@@ -98,7 +99,7 @@ class _PrecisePickupScreenState extends State<PrecisePickupScreen> {
               _controllerGoogleMap.complete(controller);
               newGoogleMapController = controller;
               setState(() {
-                 bottomPaddingOfMap = 100.0; // Adjust this value as needed
+                 bottomPaddingOfMap = 50.0; // Adjust this value as needed
               });
               locateUserPosition();
             },
@@ -140,6 +141,29 @@ class _PrecisePickupScreenState extends State<PrecisePickupScreen> {
                 ),
               ),
             ),
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Padding(
+              padding: EdgeInsets.all(12),
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: darkTheme ? Colors.black : Colors.blue,
+                  textStyle: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                child: Text(
+                  "Set Current Location",
+                ),
+              ),
+            )
+          )
         ],
       ),
     );

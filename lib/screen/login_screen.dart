@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:uber_clone/screen/register_screen.dart';
+import 'package:uber_clone/splashScreen/SplashScreen.dart';
 
 import '../global/global.dart';
 import 'forgot_password_screen.dart';
@@ -29,12 +30,19 @@ class _LoginScreenState extends State<LoginScreen> {
         password: passwordTextEditingController.text.trim(),
       )
           .then((auth) async {
-        currentUser = auth.user;
-        await Fluttertoast.showToast(msg: "Log in Successfully");
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (c) => MainScreen()),
-        );
+            DatabaseReference userRef = FirebaseDatabase.instance.ref().child("users");
+            userRef.child(firebaseAuth.currentUser!.uid).once().then((value) async {
+              final snap = value.snapshot;
+              if(snap.value != null) {
+                currentUser = auth.user;
+                await Fluttertoast.showToast(msg: "Log in Successfully");
+                Navigator.push(context, MaterialPageRoute(builder: (c) => MainScreen()),);
+              } else {
+                await Fluttertoast.showToast(msg: "No record exists for this email");
+                firebaseAuth.signOut();
+                Navigator.push(context, MaterialPageRoute(builder: (c) => SplashScreen()),);
+              }
+            });
       })
           .catchError((error) {
         Fluttertoast.showToast(
