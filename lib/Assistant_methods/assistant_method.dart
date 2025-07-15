@@ -51,4 +51,8 @@ class AssistantMethod {
     directionsDetailsInfo.duration_value = responseDirectionsApi["routes"][0]["legs"][0]["duration"]["value"];
     return directionsDetailsInfo;
   }
+  static double calculateFareAmountFromOriginToDestination(DirectionsDetailsInfo distanceValue) {
+    double fareAmount = (distanceValue.duration_value! / 1000) * 20 + (distanceValue.duration_value! / 60) * 5;
+    return fareAmount;
+  }
 }
