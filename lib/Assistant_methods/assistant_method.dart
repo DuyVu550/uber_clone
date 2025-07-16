@@ -55,4 +55,12 @@ class AssistantMethod {
     double fareAmount = (distanceValue.duration_value! / 1000) * 20 + (distanceValue.duration_value! / 60) * 5;
     return fareAmount;
   }
+  static sendNotificationToDriver(String deviceRegistrationToken, String userRideRequestId, context) async {
+    String? destinationAddress = userDropOffAddress;
+    Map<String, String> headerNotification = {
+      "content-type": "application/json",
+      'Authorization':
+    };
+
+  }
 }
