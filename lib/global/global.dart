@@ -16,4 +16,4 @@ String driverPhone = "";
 double countRatingStars = 0.0;
 String titleStarsRating = "";
 List driversList = [];
-String cloudMessagingServerToken =
+String cloudMessagingServerToken = 'key=DJcUKSd0_Yi4Mx_P41Jn8n2D6t1MoNYR1M--RVfurxs';

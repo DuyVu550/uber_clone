@@ -10,6 +10,7 @@ import 'package:uber_clone/screen/register_screen.dart';
 import 'package:uber_clone/screen/search_placed_screen.dart';
 import 'package:uber_clone/splashScreen/SplashScreen.dart';
 import 'package:uber_clone/themeProvider/themeProvider.dart';
+import 'package:uber_clone/widgets/pay_fare_amount_dialog.dart';
 
 Future<void> main() async{
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,7 +42,7 @@ class MyApp extends StatelessWidget {
         themeMode: ThemeMode.system,
         theme: MyThemes.lightTheme,
         darkTheme: MyThemes.darkTheme,
-        home: SplashScreen(),
+        home: PayFareAmountDialog(),
       ),
     );
   }

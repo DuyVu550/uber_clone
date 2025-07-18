@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:firebase_database/firebase_database.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:uber_clone/Assistant_methods/request_assistant.dart';
 import 'package:uber_clone/InfoHandler/app_info.dart';
@@ -59,8 +62,35 @@ class AssistantMethod {
     String? destinationAddress = userDropOffAddress;
     Map<String, String> headerNotification = {
       "content-type": "application/json",
-      'Authorization':
+      'Authorization': cloudMessagingServerToken,
     };
+
+    Map bodyNotification = {
+      "body": "Destination Address: \n$destinationAddress.",
+      "title": "New Ride Request",
+    };
+
+    Map dataMap = {
+      "click_action": "FLUTTER_NOTIFICATION_CLICK",
+      "id": "1",
+      "status": "done",
+      "ride_request_id": userRideRequestId,
+    };
+
+    Map officialNotificationFormat = {
+      "notification": bodyNotification,
+      "data": dataMap,
+      "to": deviceRegistrationToken,
+      "priority": "high",
+    };
+
+    var resposeNotification = http.post(
+      Uri.parse("https://fcm.googleapis.com/v1/projects/myproject-b5ae1/messages:send"),
+      headers: headerNotification,
+      body: jsonEncode(officialNotificationFormat)
+    );
+
+
 
   }
 }
