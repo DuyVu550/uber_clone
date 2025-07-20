@@ -8,4 +8,5 @@ class ActiveNearbyAvailableDrivers{
     this.locationLatitude,
     this.locationLongitude,
   });
+
 }

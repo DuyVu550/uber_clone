@@ -37,7 +37,7 @@ class _SplashScreenState extends State<SplashScreen> {
     return Scaffold(
       body: Center(
         child: Text(
-          'Uber Clone',
+          'Taxi Thanh',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:uber_clone/screen/rate_driver_screen.dart';
 import 'package:uber_clone/splashScreen/SplashScreen.dart';
 class PayFareAmountDialog extends StatefulWidget {
 
@@ -70,10 +71,7 @@ class _PayFareAmountDialogState extends State<PayFareAmountDialog> {
                 backgroundColor: darkTheme ? Colors.amber.shade400 : Colors.white,
               ),
                 onPressed: (){
-                 Future.delayed(Duration(milliseconds: 10000), (){
-                   Navigator.pop(context, "Cash Paid");
-                   Navigator.push(context, MaterialPageRoute(builder: (c) => SplashScreen()));
-                 });
+                   Navigator.push(context, MaterialPageRoute(builder: (c) => RateDriverScreen()));
                 },
                 child: Row(
                   children: [

@@ -83,14 +83,5 @@ class AssistantMethod {
       "to": deviceRegistrationToken,
       "priority": "high",
     };
-
-    var resposeNotification = http.post(
-      Uri.parse("https://fcm.googleapis.com/v1/projects/myproject-b5ae1/messages:send"),
-      headers: headerNotification,
-      body: jsonEncode(officialNotificationFormat)
-    );
-
-
-
   }
 }

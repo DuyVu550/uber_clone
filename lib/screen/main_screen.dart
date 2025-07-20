@@ -5,6 +5,7 @@ import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:uber_clone/Models/active_nearby_available_drivers.dart';
 import 'package:uber_clone/screen/precis_pickup_location.dart';
+import 'package:uber_clone/screen/rate_driver_screen.dart';
 import 'package:uber_clone/screen/search_placed_screen.dart';
 import 'package:uber_clone/splashScreen/SplashScreen.dart';
 import 'package:uber_clone/themeProvider/themeProvider.dart';
@@ -388,24 +389,9 @@ class _MainScreenState extends State<MainScreen> {
         .of<AppInfo>(context, listen: false)
         .userDropOffLocation;
 
-    Map originLocationMap = {
-      "latitude": originLocation!.locationLatitude.toString(),
-      "longitude": originLocation.locationLongtitude.toString(),
-    };
-
-    Map destinationLocationMap = {
-      "latitude": destinationLocation!.locationLatitude.toString(),
-      "longitude": destinationLocation.locationLongtitude.toString(),
-    };
-
     Map userInformationMap = {
-      "origin": originLocationMap,
-      "destination": destinationLocationMap,
-      "time": DateTime.now().toString(),
       "userName": userModelCurrentInfo!.name,
       "userPhone": userModelCurrentInfo!.phone,
-      "userAddress": originLocation.locationName,
-      "destinationAddress": destinationLocation.locationName,
       "driverId": "waiting",
     };
 
@@ -483,7 +469,9 @@ class _MainScreenState extends State<MainScreen> {
                   if ((eventSnap.snapshot.value as Map)["driverId"] != null) {
                     String assignedDriverId = (eventSnap.snapshot
                         .value as Map)["driverId"].toString();
-                    // Navigator.push(context, MaterialPageRoute(builder: (c) => RateDriverScreen()));
+                    Navigator.push(context, MaterialPageRoute(builder: (c) => RateDriverScreen(
+                      assignedDriverId: assignedDriverId,
+                    )));
                     referenceRideRequest!.onDisconnect();
                     tripRidesRequestInfoStreamSubscription!.cancel();
                   }
@@ -1023,7 +1011,21 @@ class _MainScreenState extends State<MainScreen> {
                         Expanded(
                             child: GestureDetector(
                               onTap: () {
-                                saveRideRequestInformation(selectedRideType);
+                                showDialog(
+                                    context: context,
+                                    builder: (context) {
+                                      return AlertDialog(
+                                        title: Text("Do you want to request a ride?"),
+                                        actions: [
+                                          TextButton(onPressed: () {
+                                            Navigator.push(context, MaterialPageRoute(builder: (c) => PayFareAmountDialog()));
+                                          }, child: Text("Yes")),
+                                          TextButton(onPressed: () {
+                                            Navigator.pop(context);
+                                          }, child: Text("No"))
+                                        ],
+                                      );
+                                    });
                               },
                               child: Container(
                                 padding: EdgeInsets.all(12),
