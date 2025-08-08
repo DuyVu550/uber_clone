@@ -13,4 +13,4 @@ A few resources to get you started if this is your first Flutter project:
 
 ## Pictures about project
 
-<img width="300" height="700" alt="Screenshot 2025-07-29 210626" src="https://github.com/user-attachments/assets/d6db30e4-2600-4324-a097-8b6f79d06662" />
+<img width="300" height="500" alt="Screenshot 2025-07-29 210626" src="https://github.com/user-attachments/assets/d6db30e4-2600-4324-a097-8b6f79d06662" />
